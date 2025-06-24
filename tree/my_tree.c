@@ -10,6 +10,11 @@
 #include <dirent.h>
 
 
+#define RECURSION_DEPTH 200
+
+int tab_ind = 0;
+int tabs[RECURSION_DEPTH];
+
 /*
 Generates new path for subdirectories
 Ex: ("./dir0", "dir1") -> "./dir0/dir1"
@@ -21,6 +26,28 @@ char* path_concat(const char *path, const char *dir) {
     strcat(res, "/");
     strcat(res, dir);
     return res;
+}
+
+/*
+Prints the prefix of tabs per entry
+*/
+void print_tabs() {
+    for (int i = 0; i < tab_ind; i++) {
+        switch (tabs[i])
+        {
+        case 0:
+            printf("    ");
+            break;
+        case 1:
+            printf("│   ");
+            break;
+        case 2:
+            printf("├───");
+        case 3:
+            printf("└───");
+            break;
+        }
+    }
 }
 
 void recurse(const char *path, int depth) {
