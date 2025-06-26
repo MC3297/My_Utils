@@ -60,6 +60,14 @@ void print_tabs() {
     }
 }
 
+void print_dir(const char *s) {
+    printf("\x1b[34m%s\x1b[0m\n", s);
+}
+
+void print_file(const char *s) {
+    printf("\x1b[0m%s\x1b[0m\n", s);
+}
+
 /*
 Copies all dirent entries from readdir and puts it in an array of pointers
 Modifies `n` to store array size
@@ -127,11 +135,11 @@ void recurse(const char *path) {
         print_tabs();
         
         if (entry->d_type == DT_REG) {
-            printf("%s\n", entry->d_name);
+            print_file(entry->d_name);
         }
         
         if (entry->d_type == DT_DIR) {
-            printf("%s\n", entry->d_name);
+            print_dir(entry->d_name);
             
             if (i == n-1) tabs[tab_ind-1] = E;
             else tabs[tab_ind-1] = I;
