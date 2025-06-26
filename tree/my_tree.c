@@ -12,6 +12,11 @@
 
 #define RECURSION_DEPTH 200
 
+#define E 0
+#define I 1
+#define T 2
+#define L 3
+
 int tab_ind = 0;
 int tabs[RECURSION_DEPTH];
 
@@ -35,15 +40,16 @@ void print_tabs() {
     for (int i = 0; i < tab_ind; i++) {
         switch (tabs[i])
         {
-        case 0:
+        case E:
             printf("    ");
             break;
-        case 1:
+        case I:
             printf("│   ");
             break;
-        case 2:
+        case T:
             printf("├───");
-        case 3:
+            break;
+        case L:
             printf("└───");
             break;
         }
@@ -55,7 +61,7 @@ Copies all dirent entries from readdir and puts it in an array of pointers
 Modifies `n` to store array size
 Note: array is malloc-ed so remember to free both contents and itself
 */
-struct dirent** get_entries_array(char *path, int *n) {
+struct dirent** get_entries_array(const char *path, int *n) {
     DIR *dir = opendir(path);
     if (dir == NULL) {
         perror("opendir");
@@ -70,6 +76,7 @@ struct dirent** get_entries_array(char *path, int *n) {
         }
         cnt++;
     }
+    closedir(dir);
     *n = cnt;
     
     struct dirent **arr = malloc(cnt * sizeof(struct dirent *));
@@ -81,6 +88,7 @@ struct dirent** get_entries_array(char *path, int *n) {
     int ind = 0;
     dir = opendir(path);
     while ((entry = readdir(dir)) != NULL) {
+        
         if (entry->d_name[0] == '.') {
             continue;
         }
@@ -90,44 +98,54 @@ struct dirent** get_entries_array(char *path, int *n) {
         memcpy(arr[ind], entry, sz);
         ind++;
     }
+    closedir(dir);
     
     return arr;
 }
 
-void recurse(const char *path, int depth) {
-    DIR *dir = opendir(path);
-    if (dir == NULL) {
-        perror("opendir");
-        exit(1);
-    }
+void recurse(const char *path) {
+    int n;
+    struct dirent **entries = get_entries_array(path, &n);
     
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.') {
-            continue;
-        }
+    for (int i = 0; i < n; i++) {
+        
+        struct dirent *entry = entries[i];
+        
+        // tabs[tab_ind] = E;
+        if (i == n-1) tabs[tab_ind] = L;
+        else tabs[tab_ind] = T;
+        tab_ind++;
+        print_tabs();
         
         if (entry->d_type == DT_REG) {
-            printf("file: %s\n", entry->d_name);
+            printf("%s\n", entry->d_name);
         }
         
         if (entry->d_type == DT_DIR) {
-            printf("dir: %s\n", entry->d_name);
+            printf("%s\n", entry->d_name);
+            if (i == n-1) tabs[tab_ind-1] = E;
+            else tabs[tab_ind-1] = I;
             
             char *subpath = path_concat(path, entry->d_name);
-            recurse(subpath, depth+1);
+            recurse(subpath);
             free(subpath);
         }
+        
+        tab_ind--;
     }
-    
-    closedir(dir);
+
+    for (int i = 0; i < n; i++) {
+        free(entries[i]);
+    }
+    free(entries);
 }
 
 int main() {
-    // recurse(".", 0);
-    int n = 0;
-    struct dirent **arr = get_entries_array(".", &n);
-    for (int i = 0; i < n; i++) {
-        printf("%s\n", arr[i]->d_name);
-    }
+    
+    recurse(".");
+    // int n = 0;
+    // struct dirent **arr = get_entries_array(".", &n);
+    // for (int i = 0; i < n; i++) {
+    //     printf("%s\n", arr[i]->d_name);
+    // }
 }
