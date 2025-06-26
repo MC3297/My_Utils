@@ -50,6 +50,50 @@ void print_tabs() {
     }
 }
 
+/*
+Copies all dirent entries from readdir and puts it in an array of pointers
+Modifies `n` to store array size
+Note: array is malloc-ed so remember to free both contents and itself
+*/
+struct dirent** get_entries_array(char *path, int *n) {
+    DIR *dir = opendir(path);
+    if (dir == NULL) {
+        perror("opendir");
+        exit(1);
+    }
+    
+    int cnt = 0;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') {
+            continue;
+        }
+        cnt++;
+    }
+    *n = cnt;
+    
+    struct dirent **arr = malloc(cnt * sizeof(struct dirent *));
+    if (arr == NULL) {
+        perror("malloc");
+        exit(1);
+    }
+    
+    int ind = 0;
+    dir = opendir(path);
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') {
+            continue;
+        }
+        
+        size_t sz = sizeof(struct dirent) + strlen(entry->d_name) + 1;
+        arr[ind] = malloc(sz);
+        memcpy(arr[ind], entry, sz);
+        ind++;
+    }
+    
+    return arr;
+}
+
 void recurse(const char *path, int depth) {
     DIR *dir = opendir(path);
     if (dir == NULL) {
@@ -80,5 +124,10 @@ void recurse(const char *path, int depth) {
 }
 
 int main() {
-    recurse(".", 0);
+    // recurse(".", 0);
+    int n = 0;
+    struct dirent **arr = get_entries_array(".", &n);
+    for (int i = 0; i < n; i++) {
+        printf("%s\n", arr[i]->d_name);
+    }
 }
