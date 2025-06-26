@@ -27,6 +27,10 @@ Note: Remember to free()
 */
 char* path_concat(const char *path, const char *dir) {
     char *res = malloc(strlen(path) + strlen(dir) + 2);//+1 for null char
+    if (res == NULL) {
+        perror("malloc");
+        exit(1);
+    }
     strcpy(res, path);
     strcat(res, "/");
     strcat(res, dir);
@@ -104,6 +108,11 @@ struct dirent** get_entries_array(const char *path, int *n) {
 }
 
 void recurse(const char *path) {
+    if (tab_ind >= RECURSION_DEPTH) {
+        perror("recursion depth exceeded");
+        exit(1);
+    }
+    
     int n;
     struct dirent **entries = get_entries_array(path, &n);
     
@@ -111,10 +120,10 @@ void recurse(const char *path) {
         
         struct dirent *entry = entries[i];
         
-        // tabs[tab_ind] = E;
         if (i == n-1) tabs[tab_ind] = L;
         else tabs[tab_ind] = T;
         tab_ind++;
+        
         print_tabs();
         
         if (entry->d_type == DT_REG) {
@@ -123,6 +132,7 @@ void recurse(const char *path) {
         
         if (entry->d_type == DT_DIR) {
             printf("%s\n", entry->d_name);
+            
             if (i == n-1) tabs[tab_ind-1] = E;
             else tabs[tab_ind-1] = I;
             
@@ -140,12 +150,11 @@ void recurse(const char *path) {
     free(entries);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    char *path = ".";
+    if (argc == 2) 
+        path = argv[1];
     
-    recurse(".");
-    // int n = 0;
-    // struct dirent **arr = get_entries_array(".", &n);
-    // for (int i = 0; i < n; i++) {
-    //     printf("%s\n", arr[i]->d_name);
-    // }
+    printf("%s\n", path);
+    recurse(path);
 }
