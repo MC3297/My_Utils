@@ -9,8 +9,10 @@
 
 using std::vector;
 using std::string;
+using std::stoi;
 // using std::shared_ptr;
 using std::unique_ptr;
+using std::make_unique;
 using std::move;
 using std::stack;
 
@@ -78,12 +80,12 @@ struct variable_node : public node {
 Represents binary operators like *, +, etc
 Requires a left and right node
 */
-struct binary_op_node : public node {
+struct op_node : public node {
     string op;
     unique_ptr<node> left;
     unique_ptr<node> right;
 
-    binary_op_node(const string& _op, unique_ptr<node> l, unique_ptr<node> r):
+    op_node(const string& _op, unique_ptr<node> l, unique_ptr<node> r):
         node(node_type::BINARY_OP),
         op(_op),
         left(move(l)),
@@ -95,19 +97,39 @@ struct binary_op_node : public node {
 Represents unary operators or single variable functions like sin, log, etc
 Requires an argument node
 */
-struct unary_op_node : public node {
+struct func_node : public node {
     string op;
     unique_ptr<node> arg;
 
-    unary_op_node(const string& _op, unique_ptr<node> c):
+    func_node(const string& _op, unique_ptr<node> c):
         node(node_type::UNARY_OP),
         op(_op),
         arg(move(c)) {}
 };
 
-// unique_ptr<node> construct_syntree(vector<string>::iterator st, vector<string>::iterator ed) {
-//     stack<string> operators;
-//     stack<string> terms;
+unique_ptr<node> create_node(const string& s) {
+    if (is_integer_token(s)) {
+        return make_unique<number_node>(stoi(s));
+    }
+    if (is_operator_token(s)) {
+        return make_unique<op_node>(s);
+    }
     
+}
+
+unique_ptr<node> construct_syntree(vector<string>::iterator st, vector<string>::iterator ed) {
+    stack<string> ops;
+    stack<string> terms;
     
-// }
+    for (vector<string>::iterator it = st; it != ed; it++) {
+        
+        if (is_operator_token(*it)) {
+            while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
+                
+            }
+        }
+        else {
+            terms.push(*it);
+        }
+    }
+}
