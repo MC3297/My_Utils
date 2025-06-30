@@ -1,12 +1,18 @@
 #pragma once
 
+#include "token.cpp"
+
+#include <vector>
 #include <string>
 #include <memory>
+#include <stack>
 
+using std::vector;
 using std::string;
 // using std::shared_ptr;
 using std::unique_ptr;
 using std::move;
+using std::stack;
 
 /*
 Assigns each binary operator a numerical precedence
@@ -99,4 +105,9 @@ struct unary_op_node : public node {
         arg(move(c)) {}
 };
 
-
+// unique_ptr<node> construct_syntree(vector<string>::iterator st, vector<string>::iterator ed) {
+//     stack<string> operators;
+//     stack<string> terms;
+    
+    
+// }
