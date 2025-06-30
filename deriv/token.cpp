@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cctype>
+#include <stdexcept>
 
 using std::string;
 using std::vector;
@@ -12,6 +13,7 @@ using std::find;
 using std::size_t;
 using std::all_of;
 using std::isdigit;
+using std::invalid_argument;
 
 const vector<string> operator_tokens = {"+", "-", "*", "/", "^"};
 const vector<string> function_tokens = {"sin", "cos", "log"};
@@ -61,13 +63,16 @@ vector<string> tokenize(const string& expr) {
     string cur;
     size_t i = 0;
     while (i < expr.size()) {
-        while (!is_valid_token(cur)) {
+        while (i < expr.size() && !is_valid_token(cur)) {
             cur += expr[i];
             i++;
         }
-        while (is_valid_token(cur+expr[i])) {
+        while (i < expr.size() && is_valid_token(cur+expr[i])) {
             cur += expr[i];
             i++;
+        }
+        if (cur.empty()) {
+            throw invalid_argument("invalid expr");
         }
         
         res.push_back(cur);

@@ -107,29 +107,29 @@ struct func_node : public node {
         arg(move(c)) {}
 };
 
-unique_ptr<node> create_node(const string& s) {
-    if (is_integer_token(s)) {
-        return make_unique<number_node>(stoi(s));
-    }
-    if (is_operator_token(s)) {
-        return make_unique<op_node>(s);
-    }
+// unique_ptr<node> create_node(const string& s) {
+//     if (is_integer_token(s)) {
+//         return make_unique<number_node>(stoi(s));
+//     }
+//     if (is_operator_token(s)) {
+//         return make_unique<op_node>(s);
+//     }
     
-}
+// }
 
-unique_ptr<node> construct_syntree(vector<string>::iterator st, vector<string>::iterator ed) {
-    stack<string> ops;
-    stack<string> terms;
+// unique_ptr<node> construct_syntree(vector<string>::iterator st, vector<string>::iterator ed) {
+//     stack<string> ops;
+//     stack<string> terms;
     
-    for (vector<string>::iterator it = st; it != ed; it++) {
+//     for (vector<string>::iterator it = st; it != ed; it++) {
         
-        if (is_operator_token(*it)) {
-            while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
+//         if (is_operator_token(*it)) {
+//             while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
                 
-            }
-        }
-        else {
-            terms.push(*it);
-        }
-    }
-}
+//             }
+//         }
+//         else {
+//             terms.push(*it);
+//         }
+//     }
+// }
