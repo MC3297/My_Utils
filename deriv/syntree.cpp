@@ -6,15 +6,18 @@
 #include <string>
 #include <memory>
 #include <stack>
+#include <map>
 
 using std::vector;
 using std::string;
 using std::stoi;
 // using std::shared_ptr;
+using std::next;
 using std::unique_ptr;
 using std::make_unique;
 using std::move;
 using std::stack;
+using std::map;
 
 /*
 Assigns each binary operator a numerical precedence
@@ -107,29 +110,88 @@ struct func_node : public node {
         arg(move(c)) {}
 };
 
-// unique_ptr<node> create_node(const string& s) {
-//     if (is_integer_token(s)) {
-//         return make_unique<number_node>(stoi(s));
-//     }
-//     if (is_operator_token(s)) {
-//         return make_unique<op_node>(s);
-//     }
-    
-// }
+unique_ptr<node> create_node(const string& tok) {
+    if (is_integer_token(tok)) {
+        return make_unique<number_node>(stoi(tok));
+    }
+    if (is_operator_token(tok)) {
+        return make_unique<op_node>(tok, nullptr, nullptr);
+    }
+    if (is_variable_token(tok)) {
+        return make_unique<variable_node>(tok);
+    }
+    return nullptr;
+}
 
-// unique_ptr<node> construct_syntree(vector<string>::iterator st, vector<string>::iterator ed) {
-//     stack<string> ops;
-//     stack<string> terms;
+unique_ptr<node> recurse_syntree(vector<string>::const_iterator st, vector<string>::const_iterator ed, 
+const map<vector<string>::const_iterator, vector<string>::const_iterator>& match) {
     
-//     for (vector<string>::iterator it = st; it != ed; it++) {
+    using c_it = vector<string>::const_iterator;
+    
+    stack<string> ops;
+    stack<unique_ptr<node>> terms;
+    
+    for (c_it it = st; it != ed; ++it) {
         
-//         if (is_operator_token(*it)) {
-//             while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
+        if (*it == "(") {
+            terms.push(recurse_syntree(it+1, match.at(it)+1, match));
+            it = match.at(it);
+        }
+        else if (is_operator_token(*it)) {
+            while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
                 
-//             }
-//         }
-//         else {
-//             terms.push(*it);
-//         }
-//     }
-// }
+                unique_ptr<op_node> tmp = make_unique<op_node>(*it, nullptr, nullptr);
+                tmp->right = move(terms.top());
+                terms.pop();
+                tmp->left = move(terms.top());
+                terms.pop();
+                
+                terms.push(move(tmp));
+            }
+            ops.push(*it);
+        }
+        else {
+            terms.push(create_node(*it));
+        }
+    }
+    
+    while (!ops.empty()) {
+        
+        unique_ptr<op_node> tmp = make_unique<op_node>(ops.top(), nullptr, nullptr);
+        ops.pop();
+        tmp->right = move(terms.top());
+        terms.pop();
+        tmp->left = move(terms.top());
+        terms.pop();
+        
+        terms.push(move(tmp));
+    }
+    
+    if (terms.size() != 1) {
+        std::cout << "somesing wong" << terms.size() << '\n';;
+    }
+    unique_ptr<node> res = move(terms.top());
+    terms.pop();
+    return res;
+}
+
+unique_ptr<node> construct_syntree(const vector<string>::const_iterator st, const vector<string>::const_iterator ed) {
+    using c_it = vector<string>::const_iterator;
+    
+    //first create map that matches "(" iterators to ")" iterators
+    map<c_it, c_it> match;
+    
+    //stack to store "("
+    stack<c_it> keys;
+    for (c_it it = st; it != ed; ++it) {
+        if (*it == "(") {
+            keys.push(it);
+        }
+        else if (*it == ")") {
+            match[keys.top()] = it;
+            keys.pop();
+        }
+    }
+    
+    return recurse_syntree(st, ed, match);
+}

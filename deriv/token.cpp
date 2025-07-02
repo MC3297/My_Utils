@@ -28,15 +28,13 @@ bool is_number(const string& tok) {
     return true;
 }
 
-/*
-this is kinda iffy, should probably refine later
-*/
+
 bool is_operator_token(const string& tok) {
     return find(operator_tokens.begin(), operator_tokens.end(), tok) != operator_tokens.end();
 }
 
 bool is_integer_token(const string& tok) {
-    return is_number(tok) || find(digit_tokens.begin(), digit_tokens.end(), tok) != digit_tokens.end();
+    return is_number(tok);
 }
 
 bool is_variable_token(const string& tok) {
@@ -46,6 +44,7 @@ bool is_variable_token(const string& tok) {
 bool is_misc_token(const string& tok) {
     return find(misc_tokens.begin(), misc_tokens.end(), tok) != misc_tokens.end();
 }
+
 
 //doesnt include negative numbers as valid tokens
 bool is_valid_token(const string& tok) {

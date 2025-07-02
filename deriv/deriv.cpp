@@ -21,7 +21,9 @@ x^2*cos(x)+sin(x)/x
 
 
 int main() {
-    string expr = "12*x-4/x";
+    string expr = "x+(2*x)";//"1+(12*(x-4)/x)";
     vector<string> tokens = tokenize(expr);
     cout << tokens << '\n';
+    
+    unique_ptr<node> tree = construct_syntree(tokens.begin(), tokens.end());
 }
