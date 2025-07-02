@@ -49,6 +49,8 @@ struct node {
     node_type type;
 
     node(node_type t) : type(t) {}
+    
+    virtual void print() = 0;
     virtual ~node() = default;
 };
 
@@ -59,7 +61,11 @@ Integers for now, could become a double if extended
 */
 struct number_node : public node {
     int value;
-
+    
+    void print() override {
+        std::cout << "(num: " << value << ")\n";
+    }
+    
     number_node(int val):
         node(node_type::NUMBER),
         value(val) {}
@@ -72,6 +78,10 @@ Stores a variable name
 */
 struct variable_node : public node {
     string name;
+    
+    void print() override {
+        std::cout << "(var: " << name << ")\n";
+    }
 
     variable_node(const string& varName):
         node(node_type::VARIABLE),
@@ -87,6 +97,12 @@ struct op_node : public node {
     string op;
     unique_ptr<node> left;
     unique_ptr<node> right;
+    
+    void print() override {
+        std::cout << "(op: " << op << ")\n";
+        std::cout << "left: "; left->print();
+        std::cout << "right: "; right->print();
+    }
 
     op_node(const string& _op, unique_ptr<node> l, unique_ptr<node> r):
         node(node_type::BINARY_OP),
@@ -134,13 +150,17 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
     for (c_it it = st; it != ed; ++it) {
         
         if (*it == "(") {
-            terms.push(recurse_syntree(it+1, match.at(it)+1, match));
+            // std::cout << "PARENTHESIS\n";
+            // std::cout << *(it+1) << ' ' << *(match.at(it)) << '\n';
+            terms.push(recurse_syntree(it+1, match.at(it), match));
+            //std::cout << "recurse: "; terms.top()->print();
             it = match.at(it);
         }
         else if (is_operator_token(*it)) {
             while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
                 
-                unique_ptr<op_node> tmp = make_unique<op_node>(*it, nullptr, nullptr);
+                unique_ptr<op_node> tmp = make_unique<op_node>(ops.top(), nullptr, nullptr);
+                ops.pop();
                 tmp->right = move(terms.top());
                 terms.pop();
                 tmp->left = move(terms.top());
@@ -168,8 +188,9 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
     }
     
     if (terms.size() != 1) {
-        std::cout << "somesing wong" << terms.size() << '\n';;
+        std::cout << "somesing wong" << terms.size() << '\n';
     }
+
     unique_ptr<node> res = move(terms.top());
     terms.pop();
     return res;
