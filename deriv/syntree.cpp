@@ -100,8 +100,8 @@ struct op_node : public node {
     
     void print() override {
         std::cout << "(op: " << op << ")\n";
-        std::cout << "left: "; left->print();
-        std::cout << "right: "; right->print();
+        std::cout << "\nleft: "; left->print();
+        std::cout << "\nright: "; right->print();
     }
 
     op_node(const string& _op, unique_ptr<node> l, unique_ptr<node> r):

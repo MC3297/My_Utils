@@ -26,4 +26,5 @@ int main() {
     cout << tokens << '\n';
     
     unique_ptr<node> tree = construct_syntree(tokens.begin(), tokens.end());
+    tree->print();
 }
