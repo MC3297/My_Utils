@@ -21,7 +21,7 @@ x^2*cos(x)+sin(x)/x
 
 
 int main() {
-    string expr = "(x+2)*x+3/(x^5)";//"1+(12*(x-4)/x)";
+    string expr = "2*x+sin(x^5)*3-x";//"(x+2)*x+3/(x^5)";//"1+(12*(x-4)/x)";
     vector<string> tokens = tokenize(expr);
     cout << tokens << '\n';
     

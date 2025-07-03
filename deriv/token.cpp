@@ -22,6 +22,7 @@ const vector<string> variable_tokens = {"x"};
 const vector<string> misc_tokens = {"(", ")"};
 
 bool is_number(const string& tok) {
+    if (tok.empty()) return false;
     for (char c: tok) {
         if (!isdigit(c)) return false;
     }
@@ -41,6 +42,10 @@ bool is_variable_token(const string& tok) {
     return find(variable_tokens.begin(), variable_tokens.end(), tok) != variable_tokens.end();
 }
 
+bool is_func_token(const string& tok) {
+    return find(function_tokens.begin(), function_tokens.end(), tok) != function_tokens.end();
+}
+
 bool is_misc_token(const string& tok) {
     return find(misc_tokens.begin(), misc_tokens.end(), tok) != misc_tokens.end();
 }
@@ -48,7 +53,11 @@ bool is_misc_token(const string& tok) {
 
 //doesnt include negative numbers as valid tokens
 bool is_valid_token(const string& tok) {
-    return is_operator_token(tok) || is_integer_token(tok) || is_variable_token(tok) || is_misc_token(tok);
+    return is_operator_token(tok) || 
+    is_integer_token(tok) || 
+    is_variable_token(tok) || 
+    is_func_token(tok) ||
+    is_misc_token(tok);
 }
 
 /*
@@ -71,7 +80,7 @@ vector<string> tokenize(const string& expr) {
             i++;
         }
         if (cur.empty()) {
-            throw invalid_argument("invalid expr");
+            throw invalid_argument("tokenize: invalid expr");
         }
         
         res.push_back(cur);

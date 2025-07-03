@@ -117,12 +117,17 @@ Represents unary operators or single variable functions like sin, log, etc
 Requires an argument node
 */
 struct func_node : public node {
-    string op;
+    string FUNC;
     unique_ptr<node> arg;
+    
+    void print() override {
+        std::cout << "(func: " << FUNC << ")\n";
+        std::cout << "(arg: "; arg->print();
+    }
 
-    func_node(const string& _op, unique_ptr<node> c):
+    func_node(const string& _FUNC, unique_ptr<node> c):
         node(node_type::UNARY_OP),
-        op(_op),
+        FUNC(_FUNC),
         arg(move(c)) {}
 };
 
@@ -169,6 +174,12 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
                 terms.push(move(tmp));
             }
             ops.push(*it);
+        }
+        else if (is_func_token(*it)) {
+            unique_ptr<func_node> tmp = make_unique<func_node>(*it, nullptr);
+            tmp->arg = recurse_syntree(it+2, match.at(it+1), match);
+            it = match.at(it+1);
+            terms.push(move(tmp));
         }
         else {
             terms.push(create_node(*it));
