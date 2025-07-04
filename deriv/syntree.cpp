@@ -134,11 +134,14 @@ struct func_node : public node {
 };
 
 unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, unique_ptr<node> r = nullptr) {
-    if (is_integer_token(tok)) {
-        return make_unique<number_node>(stoi(tok));
-    }
     if (is_operator_token(tok)) {
         return make_unique<op_node>(tok, move(l), move(r));
+    }
+    if (is_func_token(tok)) {
+        return make_unique<func_node>(tok, move(l));
+    }
+    if (is_integer_token(tok)) {
+        return make_unique<number_node>(stoi(tok));
     }
     if (is_variable_token(tok)) {
         return make_unique<variable_node>(tok);
@@ -176,10 +179,9 @@ unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c
             ops.push(*it);
         }
         else if (is_func_token(*it)) {
-            unique_ptr<func_node> tmp = make_unique<func_node>(*it, nullptr);
-            tmp->arg = recurse_syntree(it+2, match.at(it+1), match);
+            unique_ptr<node> tmp = recurse_syntree(it+2, match.at(it+1), match);
+            terms.push(create_node(*it, move(tmp)));
             it = match.at(it+1);
-            terms.push(move(tmp));
         }
         else {
             terms.push(create_node(*it));
