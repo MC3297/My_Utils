@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "token.cpp"
+#include "nodes.cpp"
 #include "syntree.cpp"
 
 using std::string;
@@ -21,7 +22,7 @@ x^2*cos(x)+sin(x)/x
 
 
 int main() {
-    string expr = "2*x+sin(x^5)*cos(3)-x";//"(x+2)*x+3/(x^5)";//"1+(12*(x-4)/x)";
+    string expr = "2*3*x+sin(x^5)*cos(3)-x";//"(x+2)*x+3/(x^5)";//"1+(12*(x-4)/x)";
     vector<string> tokens = tokenize(expr);
     cout << tokens << '\n';
     

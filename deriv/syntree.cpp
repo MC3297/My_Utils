@@ -1,6 +1,7 @@
 #pragma once
 
 #include "token.cpp"
+#include "nodes.cpp"
 
 #include <vector>
 #include <string>
@@ -11,146 +12,12 @@
 
 using std::vector;
 using std::string;
-using std::stoi;
-using std::next;
 using std::unique_ptr;
 using std::make_unique;
 using std::move;
 using std::stack;
 using std::map;
 using std::invalid_argument;
-
-/*
-Specifies the type of node
-*/
-enum class node_type {
-    NUMBER,
-    VARIABLE,
-    BINARY_OP,
-    UNARY_OP
-};
-
-/*
-General `node` struct of syntree
-*/
-struct node {
-    node_type type;
-
-    node(node_type t) : type(t) {}
-    
-    virtual void print() = 0;
-    virtual ~node() = default;
-};
-
-/*
-`node` subclass
-Stores a constant integer
-Integers for now, could become a double in the future
-*/
-struct number_node : public node {
-    int value;
-    
-    void print() override {
-        std::cout << "(num: " << value << ")\n";
-    }
-    
-    number_node(int val):
-        node(node_type::NUMBER),
-        value(val) {}
-};
-
-/*
-`node` subclass
-Stores a variable name
-"x" for now, can include other names if extended to multivariable expressions
-*/
-struct variable_node : public node {
-    string name;
-    
-    void print() override {
-        std::cout << "(var: " << name << ")\n";
-    }
-
-    variable_node(const string& var):
-        node(node_type::VARIABLE),
-        name(var) {}
-};
-
-/*
-`node` subclass
-Represents binary operators like *, +, etc
-Requires a left and right node
-*/
-struct op_node : public node {
-    string op;
-    unique_ptr<node> left;
-    unique_ptr<node> right;
-    
-    void print() override {
-        std::cout << "(op: " << op << ")\n";
-        std::cout << "\nleft: "; left->print();
-        std::cout << "\nright: "; right->print();
-    }
-
-    op_node(const string& _op, unique_ptr<node> l, unique_ptr<node> r):
-        node(node_type::BINARY_OP),
-        op(_op),
-        left(move(l)),
-        right(move(r)) {}
-};
-
-/*
-`node` subclass
-Represents unary operators or single variable functions like sin, log, etc
-Requires an argument node
-*/
-struct func_node : public node {
-    string func;
-    unique_ptr<node> arg;
-    
-    void print() override {
-        std::cout << "(func: " << func << ")\n";
-        std::cout << "(arg: "; arg->print();
-    }
-
-    func_node(const string& _func, unique_ptr<node> c):
-        node(node_type::UNARY_OP),
-        func(_func),
-        arg(move(c)) {}
-};
-
-unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, unique_ptr<node> r = nullptr) {
-    if (is_operator_token(tok)) {
-        
-        //optimizations and simplifying
-        if (tok == "+") {
-            // if (l->type == node_type::NUMBER && r->type == node_type::NUMBER) {
-            //     return make_unique<number_node>();
-            // }
-        }
-        else if (tok == "-") {//kinda iffy cuz neg nums arent supported
-            
-        }
-        else if (tok == "*") {
-            
-        }
-        else if (tok == "/") {
-            
-        }
-        
-        return make_unique<op_node>(tok, move(l), move(r));
-    }
-    if (is_func_token(tok)) {
-        return make_unique<func_node>(tok, move(l));
-    }
-    if (is_integer_token(tok)) {
-        return make_unique<number_node>(stoi(tok));
-    }
-    if (is_variable_token(tok)) {
-        return make_unique<variable_node>(tok);
-    }
-    return nullptr;
-}
 
 using c_it = vector<string>::const_iterator;
 
@@ -200,17 +67,17 @@ unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c
     
     while (!ops.empty()) {
         
-        unique_ptr<op_node> tmp = make_unique<op_node>(ops.top(), nullptr, nullptr);
-        ops.pop();
         if (terms.size() < 2) {
             throw "recurse_syntree: too many ops, not enough terms";
         }
-        tmp->right = move(terms.top());
+        
+        unique_ptr<node> r = move(terms.top());
         terms.pop();
-        tmp->left = move(terms.top());
+        unique_ptr<node> l = move(terms.top());
         terms.pop();
         
-        terms.push(move(tmp));
+        terms.push(create_node(ops.top(), move(l), move(r)));
+        ops.pop();
     }
     
     if (terms.size() != 1) {
