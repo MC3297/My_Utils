@@ -61,6 +61,19 @@ bool is_valid_token(const string& tok) {
 }
 
 /*
+Assigns each binary operator a numerical precedence
+Higher precendence means larger number
+*/
+int precedence_of(const string &op) {
+    if (op == "^") return 3;
+    if (op == "*") return 2;
+    if (op == "/") return 2;
+    if (op == "+") return 1;
+    if (op == "-") return 1;
+    return 0;
+}
+
+/*
 Returns a list of tokens from `expr`
 Finds longest valid token and pushes
 Prioritizes longer tokens, ie "cosh" before "cos"

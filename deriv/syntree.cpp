@@ -12,7 +12,6 @@
 using std::vector;
 using std::string;
 using std::stoi;
-// using std::shared_ptr;
 using std::next;
 using std::unique_ptr;
 using std::make_unique;
@@ -20,19 +19,6 @@ using std::move;
 using std::stack;
 using std::map;
 using std::invalid_argument;
-
-/*
-Assigns each binary operator a numerical precedence
-Higher precendence means larger number
-*/
-int precedence_of(const string &op) {
-    if (op == "^") return 3;
-    if (op == "*") return 2;
-    if (op == "/") return 2;
-    if (op == "+") return 1;
-    if (op == "-") return 1;
-    return 0;
-}
 
 /*
 Specifies the type of node
@@ -85,9 +71,9 @@ struct variable_node : public node {
         std::cout << "(var: " << name << ")\n";
     }
 
-    variable_node(const string& varName):
+    variable_node(const string& var):
         node(node_type::VARIABLE),
-        name(varName) {}
+        name(var) {}
 };
 
 /*
@@ -119,22 +105,39 @@ Represents unary operators or single variable functions like sin, log, etc
 Requires an argument node
 */
 struct func_node : public node {
-    string FUNC;
+    string func;
     unique_ptr<node> arg;
     
     void print() override {
-        std::cout << "(func: " << FUNC << ")\n";
+        std::cout << "(func: " << func << ")\n";
         std::cout << "(arg: "; arg->print();
     }
 
-    func_node(const string& _FUNC, unique_ptr<node> c):
+    func_node(const string& _func, unique_ptr<node> c):
         node(node_type::UNARY_OP),
-        FUNC(_FUNC),
+        func(_func),
         arg(move(c)) {}
 };
 
 unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, unique_ptr<node> r = nullptr) {
     if (is_operator_token(tok)) {
+        
+        //optimizations and simplifying
+        if (tok == "+") {
+            // if (l->type == node_type::NUMBER && r->type == node_type::NUMBER) {
+            //     return make_unique<number_node>();
+            // }
+        }
+        else if (tok == "-") {//kinda iffy cuz neg nums arent supported
+            
+        }
+        else if (tok == "*") {
+            
+        }
+        else if (tok == "/") {
+            
+        }
+        
         return make_unique<op_node>(tok, move(l), move(r));
     }
     if (is_func_token(tok)) {
@@ -151,6 +154,9 @@ unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, un
 
 using c_it = vector<string>::const_iterator;
 
+/*
+`st` and `ed` are passed by value for slight efficiency
+*/
 unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c_it>& match) {
     
     stack<string> ops;
@@ -159,10 +165,12 @@ unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c
     for (c_it it = st; it != ed; ++it) {
         
         if (*it == "(") {
+            
             terms.push(recurse_syntree(it+1, match.at(it), match));
             it = match.at(it);
         }
         else if (is_operator_token(*it)) {
+            
             while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
                 
                 if (terms.size() < 2) {
@@ -173,17 +181,19 @@ unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c
                 terms.pop();
                 unique_ptr<node> l = move(terms.top());
                 terms.pop();
+                
                 terms.push(create_node(ops.top(), move(l), move(r)));
                 ops.pop();
             }
             ops.push(*it);
         }
         else if (is_func_token(*it)) {
-            unique_ptr<node> tmp = recurse_syntree(it+2, match.at(it+1), match);
-            terms.push(create_node(*it, move(tmp)));
+            
+            terms.push(create_node(*it, recurse_syntree(it+2, match.at(it+1), match)));
             it = match.at(it+1);
         }
         else {
+            
             terms.push(create_node(*it));
         }
     }
