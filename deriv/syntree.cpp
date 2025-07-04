@@ -59,7 +59,7 @@ struct node {
 /*
 `node` subclass
 Stores a constant integer
-Integers for now, could become a double if extended
+Integers for now, could become a double in the future
 */
 struct number_node : public node {
     int value;
@@ -133,12 +133,12 @@ struct func_node : public node {
         arg(move(c)) {}
 };
 
-unique_ptr<node> create_node(const string& tok) {
+unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, unique_ptr<node> r = nullptr) {
     if (is_integer_token(tok)) {
         return make_unique<number_node>(stoi(tok));
     }
     if (is_operator_token(tok)) {
-        return make_unique<op_node>(tok, nullptr, nullptr);
+        return make_unique<op_node>(tok, move(l), move(r));
     }
     if (is_variable_token(tok)) {
         return make_unique<variable_node>(tok);
@@ -162,17 +162,16 @@ unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c
         else if (is_operator_token(*it)) {
             while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
                 
-                unique_ptr<op_node> tmp = make_unique<op_node>(ops.top(), nullptr, nullptr);
-                ops.pop();
                 if (terms.size() < 2) {
                     throw "recurse_syntree: too many ops, not enough terms";
                 }
-                tmp->right = move(terms.top());
-                terms.pop();
-                tmp->left = move(terms.top());
-                terms.pop();
                 
-                terms.push(move(tmp));
+                unique_ptr<node> r = move(terms.top());
+                terms.pop();
+                unique_ptr<node> l = move(terms.top());
+                terms.pop();
+                terms.push(create_node(ops.top(), move(l), move(r)));
+                ops.pop();
             }
             ops.push(*it);
         }
@@ -191,6 +190,9 @@ unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c
         
         unique_ptr<op_node> tmp = make_unique<op_node>(ops.top(), nullptr, nullptr);
         ops.pop();
+        if (terms.size() < 2) {
+            throw "recurse_syntree: too many ops, not enough terms";
+        }
         tmp->right = move(terms.top());
         terms.pop();
         tmp->left = move(terms.top());
