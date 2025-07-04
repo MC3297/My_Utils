@@ -7,6 +7,7 @@
 #include <memory>
 #include <stack>
 #include <map>
+#include <stdexcept>
 
 using std::vector;
 using std::string;
@@ -18,6 +19,7 @@ using std::make_unique;
 using std::move;
 using std::stack;
 using std::map;
+using std::invalid_argument;
 
 /*
 Assigns each binary operator a numerical precedence
@@ -144,10 +146,9 @@ unique_ptr<node> create_node(const string& tok) {
     return nullptr;
 }
 
-unique_ptr<node> recurse_syntree(vector<string>::const_iterator st, vector<string>::const_iterator ed, 
-const map<vector<string>::const_iterator, vector<string>::const_iterator>& match) {
-    
-    using c_it = vector<string>::const_iterator;
+using c_it = vector<string>::const_iterator;
+
+unique_ptr<node> recurse_syntree(const c_it st, const c_it ed, const map<c_it, c_it>& match) {
     
     stack<string> ops;
     stack<unique_ptr<node>> terms;
@@ -155,10 +156,7 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
     for (c_it it = st; it != ed; ++it) {
         
         if (*it == "(") {
-            // std::cout << "PARENTHESIS\n";
-            // std::cout << *(it+1) << ' ' << *(match.at(it)) << '\n';
             terms.push(recurse_syntree(it+1, match.at(it), match));
-            //std::cout << "recurse: "; terms.top()->print();
             it = match.at(it);
         }
         else if (is_operator_token(*it)) {
@@ -166,6 +164,9 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
                 
                 unique_ptr<op_node> tmp = make_unique<op_node>(ops.top(), nullptr, nullptr);
                 ops.pop();
+                if (terms.size() < 2) {
+                    throw "recurse_syntree: too many ops, not enough terms";
+                }
                 tmp->right = move(terms.top());
                 terms.pop();
                 tmp->left = move(terms.top());
@@ -199,7 +200,7 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
     }
     
     if (terms.size() != 1) {
-        std::cout << "somesing wong" << terms.size() << '\n';
+        throw invalid_argument("recurse_syntree: parsing error");
     }
 
     unique_ptr<node> res = move(terms.top());
@@ -207,8 +208,7 @@ const map<vector<string>::const_iterator, vector<string>::const_iterator>& match
     return res;
 }
 
-unique_ptr<node> construct_syntree(const vector<string>::const_iterator st, const vector<string>::const_iterator ed) {
-    using c_it = vector<string>::const_iterator;
+unique_ptr<node> construct_syntree(const c_it st, const c_it ed) {
     
     //first create map that matches "(" iterators to ")" iterators
     map<c_it, c_it> match;
@@ -220,9 +220,15 @@ unique_ptr<node> construct_syntree(const vector<string>::const_iterator st, cons
             keys.push(it);
         }
         else if (*it == ")") {
+            if (keys.empty()) {
+                throw invalid_argument("construct_syntree: missing opening parenthesis");
+            }
             match[keys.top()] = it;
             keys.pop();
         }
+    }
+    if (!keys.empty()) {
+        throw invalid_argument("construct_syntree: too many opening parenthesis");
     }
     
     return recurse_syntree(st, ed, match);

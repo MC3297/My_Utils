@@ -21,7 +21,7 @@ const vector<string> digit_tokens = {"0", "1", "2", "3", "4", "5", "6", "7", "8"
 const vector<string> variable_tokens = {"x"};
 const vector<string> misc_tokens = {"(", ")"};
 
-bool is_number(const string& tok) {
+static bool is_number(const string& tok) {
     if (tok.empty()) return false;
     for (char c: tok) {
         if (!isdigit(c)) return false;
