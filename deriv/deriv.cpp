@@ -27,7 +27,7 @@ unique_ptr<node> op_node::deriv() {
                 create_node("*", left->deriv(), right->clone()),
                 create_node("*", left->clone(), right->deriv())
             ),
-            create_node("*", right->clone(), right->clone())
+            create_node("^", right->clone(), create_node("2"))
         );
     }
     if (op == "^") {
@@ -54,7 +54,7 @@ unique_ptr<node> func_node::deriv() {
         );
     }
     if (func == "log") {
-        return create_node("/", arg->clone(), arg->deriv());
+        return create_node("/", arg->deriv(), arg->clone());
     }
     return nullptr;
 }

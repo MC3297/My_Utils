@@ -33,7 +33,7 @@ struct node {
     
     virtual unique_ptr<node> deriv() = 0;
     virtual unique_ptr<node> clone() = 0;
-    virtual void print() = 0;
+    virtual void print(const string& prev_op) = 0;
     virtual ~node() = default;
 };
 
@@ -55,7 +55,7 @@ struct number_node : public node {
         return make_unique<number_node>(value);
     }
     
-    void print() override {
+    void print(const string& prev_op) override {
         cout << value;
     }
     
@@ -79,7 +79,7 @@ struct variable_node : public node {
         return make_unique<variable_node>(name);
     }
     
-    void print() override {
+    void print(const string& prev_op) override {
         cout << name;
     }
 
@@ -107,12 +107,15 @@ struct op_node : public node {
         return make_unique<op_node>(op, left->clone(), right->clone());
     }
     
-    void print() override {
-        cout << "(";
-        left->print();
+    void print(const string& prev_op) override {
+        bool no_parenthesis = is_func_token(prev_op) ||
+        (is_operator_token(prev_op) && precedence_of(prev_op) <= precedence_of(op));
+        
+        if (!no_parenthesis) cout << "(";
+        left->print(op);
         cout << op;
-        right->print();
-        cout << ")";
+        right->print(op);
+        if (!no_parenthesis) cout << ")";
     }
 
 };
@@ -137,9 +140,9 @@ struct func_node : public node {
         return make_unique<func_node>(func, arg->clone());
     }
     
-    void print() override {
+    void print(const string& prev_op) override {
         cout << func << "(";
-        arg->print();
+        arg->print(func);
         cout << ")";
     }
 

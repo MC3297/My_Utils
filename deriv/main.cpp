@@ -24,14 +24,12 @@ x^2*cos(x)+sin(x)/x
 
 
 int main() {
-    string expr = "x*3^4+x^2*(x+1)";//"1+(12*(x-4)/x)";//"1/x";
+    string expr = "6*x^3+2*x";
     vector<string> tokens = tokenize(expr);
-    cout << tokens << '\n';
     
     unique_ptr<node> tree = construct_syntree(tokens.begin(), tokens.end());
-    // tree->print();
     
     unique_ptr<node> d1 = tree->deriv();
-    d1->print();
+    d1->print("sin");
     cout << '\n';
 }
