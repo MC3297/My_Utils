@@ -56,7 +56,7 @@ struct number_node : public node {
     }
     
     void print() override {
-        std::cout << "(num: " << value << ")\n";
+        cout << value;
     }
     
 };
@@ -80,7 +80,7 @@ struct variable_node : public node {
     }
     
     void print() override {
-        std::cout << "(var: " << name << ")\n";
+        cout << name;
     }
 
 };
@@ -108,9 +108,9 @@ struct op_node : public node {
     }
     
     void print() override {
-        std::cout << "(op: " << op << ")\n";
-        std::cout << "\nleft: "; left->print();
-        std::cout << "\nright: "; right->print();
+        left->print();
+        cout << op;
+        right->print();
     }
 
 };
@@ -136,8 +136,9 @@ struct func_node : public node {
     }
     
     void print() override {
-        std::cout << "(func: " << func << ")\n";
-        std::cout << "(arg: "; arg->print();
+        cout << func << "(";
+        arg->print();
+        cout << ")";
     }
 
 };
@@ -202,10 +203,12 @@ unique_ptr<node> op_node::deriv() {
     }
     if (op == "/") {
         return create_node("/",
-        create_node("-", create_node("-", 
-        create_node("*", left->deriv(), right->clone()),
-        create_node("*", left->clone(), right->deriv()))),
-        create_node("*", right->clone(), right->clone()));
+            create_node("-",
+                create_node("*", left->deriv(), right->clone()),
+                create_node("*", left->clone(), right->deriv())
+            ),
+            create_node("*", right->clone(), right->clone())
+        );
     }
     if (op == "^") {
         if (right->type == node_type::NUMBER) {

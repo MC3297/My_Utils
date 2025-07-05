@@ -22,7 +22,7 @@ x^2*cos(x)+sin(x)/x
 
 
 int main() {
-    string expr = "sin(x^5)";//"(x+2)*x+3/(x^5)";//"1+(12*(x-4)/x)";
+    string expr = "3/(x^5)";//"1+(12*(x-4)/x)";
     vector<string> tokens = tokenize(expr);
     cout << tokens << '\n';
     
@@ -31,4 +31,5 @@ int main() {
     
     unique_ptr<node> d1 = tree->deriv();
     d1->print();
+    cout << '\n';
 }
