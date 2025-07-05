@@ -1,35 +1,60 @@
-#include <vector>
-#include <string>
-#include <iostream>
+#pragma once
 
-#include "token.cpp"
 #include "nodes.cpp"
-#include "syntree.cpp"
+#include "create.cpp"
 
-using std::string;
-using std::vector;
-using std::cin;
-using std::cout;
-
-//notes
-#include <bits/stdc++.h>
-/*
-g++ -Wall -D_GLIBCXX_DEBUG deriv.cpp && ./a.out
-no spaces
-x^2*cos(x)+sin(x)/x
-3*x-4*(x+1)/(x)
-*/
-
-
-int main() {
-    string expr = "3/(x^5)";//"1+(12*(x-4)/x)";
-    vector<string> tokens = tokenize(expr);
-    cout << tokens << '\n';
-    
-    unique_ptr<node> tree = construct_syntree(tokens.begin(), tokens.end());
-    // tree->print();
-    
-    unique_ptr<node> d1 = tree->deriv();
-    d1->print();
-    cout << '\n';
+unique_ptr<node> number_node::deriv() {
+    return create_node("0");
+}
+unique_ptr<node> variable_node::deriv() {
+    return create_node("1");
+}
+unique_ptr<node> op_node::deriv() {
+    if (op == "+") {
+        return create_node("+", left->deriv(), right->deriv());
+    }
+    if (op == "-") {
+        return create_node("-", left->deriv(), right->deriv());
+    }
+    if (op == "*") {
+        return create_node("+", 
+        create_node("*", left->deriv(), right->clone()),
+        create_node("*", left->clone(), right->deriv()));
+    }
+    if (op == "/") {
+        return create_node("/",
+            create_node("-",
+                create_node("*", left->deriv(), right->clone()),
+                create_node("*", left->clone(), right->deriv())
+            ),
+            create_node("*", right->clone(), right->clone())
+        );
+    }
+    if (op == "^") {
+        if (right->type == node_type::NUMBER) {
+            int pow = static_cast<number_node*>(right.get())->value;
+            return create_node("*",
+            create_node(std::to_string(pow)),
+            create_node("^", left->clone(), create_node(std::to_string(pow-1))));
+        }
+    }
+    return nullptr;
+}
+unique_ptr<node> func_node::deriv() {
+    if (func == "sin") {
+        return create_node("*", create_node("cos", arg->clone()), arg->deriv());
+    }
+    if (func == "cos") {
+        return create_node("-",
+            create_node("0"),
+            create_node("*",
+                create_node("sin", arg->clone()),
+                arg->deriv()
+            )
+        );
+    }
+    if (func == "log") {
+        return create_node("/", arg->clone(), arg->deriv());
+    }
+    return nullptr;
 }
