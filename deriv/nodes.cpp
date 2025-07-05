@@ -2,9 +2,11 @@
 
 #include "token.cpp"
 
+#include <iostream>
 #include <string>
 #include <memory>
 
+using std::cout;
 using std::string;
 using std::stoi;
 using std::unique_ptr;
@@ -29,6 +31,8 @@ struct node {
 
     node(node_type t) : type(t) {}
     
+    virtual unique_ptr<node> deriv() = 0;
+    virtual unique_ptr<node> clone() = 0;
     virtual void print() = 0;
     virtual ~node() = default;
 };
@@ -41,13 +45,20 @@ Integers for now, could become a double in the future
 struct number_node : public node {
     int value;
     
+    number_node(int val):
+        node(node_type::NUMBER),
+        value(val) {}
+    
+    unique_ptr<node> deriv() override;
+    
+    unique_ptr<node> clone() override {
+        return make_unique<number_node>(value);
+    }
+    
     void print() override {
         std::cout << "(num: " << value << ")\n";
     }
     
-    number_node(int val):
-        node(node_type::NUMBER),
-        value(val) {}
 };
 
 /*
@@ -58,13 +69,20 @@ Stores a variable name
 struct variable_node : public node {
     string name;
     
+    variable_node(const string var):
+        node(node_type::VARIABLE),
+        name(var) {}
+    
+    unique_ptr<node> deriv() override;
+    
+    unique_ptr<node> clone() override {
+        return make_unique<variable_node>(name);
+    }
+    
     void print() override {
         std::cout << "(var: " << name << ")\n";
     }
 
-    variable_node(const string& var):
-        node(node_type::VARIABLE),
-        name(var) {}
 };
 
 /*
@@ -77,17 +95,24 @@ struct op_node : public node {
     unique_ptr<node> left;
     unique_ptr<node> right;
     
+    op_node(const string _op, unique_ptr<node> l, unique_ptr<node> r):
+        node(node_type::BINARY_OP),
+        op(_op),
+        left(move(l)),
+        right(move(r)) {}
+    
+    unique_ptr<node> deriv() override;
+    
+    unique_ptr<node> clone() override {
+        return make_unique<op_node>(op, left->clone(), right->clone());
+    }
+    
     void print() override {
         std::cout << "(op: " << op << ")\n";
         std::cout << "\nleft: "; left->print();
         std::cout << "\nright: "; right->print();
     }
 
-    op_node(const string& _op, unique_ptr<node> l, unique_ptr<node> r):
-        node(node_type::BINARY_OP),
-        op(_op),
-        left(move(l)),
-        right(move(r)) {}
 };
 
 /*
@@ -99,17 +124,33 @@ struct func_node : public node {
     string func;
     unique_ptr<node> arg;
     
+    func_node(const string _func, unique_ptr<node> c):
+        node(node_type::UNARY_OP),
+        func(_func),
+        arg(move(c)) {}
+    
+    unique_ptr<node> deriv() override;
+    
+    unique_ptr<node> clone() override {
+        return make_unique<func_node>(func, arg->clone());
+    }
+    
     void print() override {
         std::cout << "(func: " << func << ")\n";
         std::cout << "(arg: "; arg->print();
     }
 
-    func_node(const string& _func, unique_ptr<node> c):
-        node(node_type::UNARY_OP),
-        func(_func),
-        arg(move(c)) {}
 };
 
+/*
+Returns a ptr to node with specifications via parameters
+`l` and `r` parameters have default arguments instead of overloading create_node()
+edit: might just overload
+Call `create_node(op, l, r)` for operation nodes
+Call `create_node(func, arg)` for function nodes
+Call `create_node(tok)` for any other valid type
+Returns `nullptr` if token doesn't fit any category
+*/
 unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, unique_ptr<node> r = nullptr) {
     if (is_operator_token(tok)) {
         
@@ -137,6 +178,60 @@ unique_ptr<node> create_node(const string& tok, unique_ptr<node> l = nullptr, un
     }
     if (is_variable_token(tok)) {
         return make_unique<variable_node>(tok);
+    }
+    return nullptr;
+}
+
+unique_ptr<node> number_node::deriv() {
+    return create_node("0");
+}
+unique_ptr<node> variable_node::deriv() {
+    return create_node("1");
+}
+unique_ptr<node> op_node::deriv() {
+    if (op == "+") {
+        return create_node("+", left->deriv(), right->deriv());
+    }
+    if (op == "-") {
+        return create_node("-", left->deriv(), right->deriv());
+    }
+    if (op == "*") {
+        return create_node("+", 
+        create_node("*", left->deriv(), right->clone()),
+        create_node("*", left->clone(), right->deriv()));
+    }
+    if (op == "/") {
+        return create_node("/",
+        create_node("-", create_node("-", 
+        create_node("*", left->deriv(), right->clone()),
+        create_node("*", left->clone(), right->deriv()))),
+        create_node("*", right->clone(), right->clone()));
+    }
+    if (op == "^") {
+        if (right->type == node_type::NUMBER) {
+            int pow = static_cast<number_node*>(right.get())->value;
+            return create_node("*",
+            create_node(std::to_string(pow)),
+            create_node("^", left->clone(), create_node(std::to_string(pow-1))));
+        }
+    }
+    return nullptr;
+}
+unique_ptr<node> func_node::deriv() {
+    if (func == "sin") {
+        return create_node("*", create_node("cos", arg->clone()), arg->deriv());
+    }
+    if (func == "cos") {
+        return create_node("-",
+            create_node("0"),
+            create_node("*",
+                create_node("sin", arg->clone()),
+                arg->deriv()
+            )
+        );
+    }
+    if (func == "log") {
+        return create_node("/", arg->clone(), arg->deriv());
     }
     return nullptr;
 }

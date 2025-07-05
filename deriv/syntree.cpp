@@ -3,6 +3,7 @@
 #include "token.cpp"
 #include "nodes.cpp"
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <memory>
@@ -10,6 +11,7 @@
 #include <map>
 #include <stdexcept>
 
+using std::cout;
 using std::vector;
 using std::string;
 using std::unique_ptr;
