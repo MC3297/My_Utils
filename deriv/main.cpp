@@ -24,7 +24,7 @@ variables must be in x
 
 
 int main() {
-    string expr = "2^3";
+    string expr = "sin(x^5)";
     
     vector<string> tokens = tokenize(expr);
     
