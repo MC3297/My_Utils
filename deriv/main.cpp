@@ -18,13 +18,14 @@ using std::cout;
 /*
 g++ -Wall -D_GLIBCXX_DEBUG main.cpp && ./a.out
 no spaces
-x^2*cos(x)+sin(x)/x
-3*x-4*(x+1)/(x)
+variables must be in x
+6x^2 bad, 6*x^2 good
 */
 
 
 int main() {
-    string expr = "6*x^3+2*x";
+    string expr = "2^3";
+    
     vector<string> tokens = tokenize(expr);
     
     unique_ptr<node> tree = construct_syntree(tokens.begin(), tokens.end());

@@ -31,12 +31,13 @@ unique_ptr<node> op_node::deriv() {
         );
     }
     if (op == "^") {
-        if (right->type == node_type::NUMBER) {
-            int pow = static_cast<number_node*>(right.get())->value;
-            return create_node("*",
-            create_node(std::to_string(pow)),
-            create_node("^", left->clone(), create_node(std::to_string(pow-1))));
-        }
+        return create_node("*",
+            create_node("^", left->clone(), right->clone()),
+            create_node("+", 
+                create_node("*", right->deriv(), create_node("log", left->clone())),
+                create_node("*", right->clone(), create_node("/", left->deriv(), left->clone()))
+            )
+        );
     }
     return nullptr;
 }
