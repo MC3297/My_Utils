@@ -21,3 +21,4 @@ Make sure the math expression is:
 - no spaces
 - all multiplication is specified with `*` (so `6*x^2` instead of `6x^2`)
 - no negative numbers but stuff like `(0-5)` is accepted
+- functions are followed by parenthesis so no `sinx`

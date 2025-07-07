@@ -110,7 +110,7 @@ unique_ptr<node> create_node(const string& tok, unique_ptr<node> l, unique_ptr<n
     
     if (tok == "^") {
         //what is 0^0 equal to?
-        if ((l->type == node_type::NUMBER && get_node_val(l) == 0) ||
+        if ((l->type == node_type::NUMBER && get_node_val(l) == 0) &&
         (r->type == node_type::NUMBER && get_node_val(r) == 0)) {
             throw invalid_argument("create_node: 0^0 undefined");
         }

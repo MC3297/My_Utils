@@ -17,14 +17,12 @@ using std::cout;
 #include <bits/stdc++.h>
 /*
 g++ -Wall -D_GLIBCXX_DEBUG main.cpp && ./a.out
-no spaces
-variables must be in x
-6x^2 bad, 6*x^2 good
+care about x^0 and x^2
 */
 
 
 int main() {
-    string expr = "sin(x^5)";
+    string expr = "x^2";
     
     vector<string> tokens = tokenize(expr);
     

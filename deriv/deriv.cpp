@@ -31,6 +31,15 @@ unique_ptr<node> op_node::deriv() {
         );
     }
     if (op == "^") {
+        if (right->type == node_type::NUMBER) {
+            return create_node("*", 
+                right->clone(),
+                create_node("*",
+                    create_node("^", left->clone(), create_node("-", right->clone(), create_node("1"))),
+                    left->deriv()
+                )
+            );
+        }
         return create_node("*",
             create_node("^", left->clone(), right->clone()),
             create_node("+", 
