@@ -1,8 +1,10 @@
 ### How to use
 
-Type ur expression into the string `expr` in main.cpp and run:
+Run `g++ -Wall -D_GLIBCXX_DEBUG main.cpp` initially to create executable file.
 
-`g++ -Wall -D_GLIBCXX_DEBUG main.cpp && ./a.out` in terminal
+Run `./a.out "<expr>"` where `<expr>` is your math expression.
+
+For example `./a.out "x^2"`
 
 Valid operations: `+`, `-`, `*`, `/`, `^`
 
@@ -15,6 +17,7 @@ Note:
 - Integers less than INT_MAX is fine
 - Constants like "e" and "pi" **aren't** supported
 - Nested parenthesis allowed so like `(x*(1+x))^2`
+- "log" refers to the natural logarithm
 
 Make sure the math expression is:
 - 1 variable which is `x` (no uppercase)
