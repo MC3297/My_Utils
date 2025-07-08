@@ -1,10 +1,10 @@
 # How to use
 
-Run `g++ -Wall -D_GLIBCXX_DEBUG main.cpp` initially to create executable file.
+Run `make compile` to create executable file.
 
-Run `./a.out "<expr>"` where `<expr>` is your math expression.
+Run `./derivate "<expr>"` where `<expr>` is your math expression.
 
-For example `./a.out "x^2"`
+For example `./derivate "x^2"`
 
 Valid operations`+`, `-`, `*`, `/`, `^`
 
@@ -27,7 +27,7 @@ Valid variables: `x`
 - functions are followed by parenthesis so no `sinx`
 
 ### Some examples
-`./a.out "log(x^2)"`  
-`./a.out "2^x"`  
-`./a.out "x^x"`  
-`./a.out "5*x^7"`
+`./derivate "log(x^2)"`  
+`./derivate "2^x"`  
+`./derivate "x^x"`  
+`./derivate "5*x^7"`
