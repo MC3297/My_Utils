@@ -19,11 +19,19 @@ The recursive aspect arises from needing to process expressions nested inside pa
 For example: `"(x+1)*log(x)"` becomes
 
 ```mermaid
-graph TD;
-    +-->x;
-    +-->1;
-    *-->+;
-    *-->log;
+graph TD
+    MUL["\*"]
+    LOG["log"]
+    PLUS["\+"]
+    X1["x"]
+    X2["x"]
+    N1["1"]
+
+    MUL --> PLUS
+    MUL --> LOG
+    LOG --> X1
+    PLUS --> X2
+    PLUS --> N1
 ```
 
 ## Differentiate
