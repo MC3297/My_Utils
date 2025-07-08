@@ -1,28 +1,10 @@
-#pragma once
+#include "syntree.h"
 
-#include "token.cpp"
-#include "nodes.cpp"
-#include "create.cpp"
-
-#include <iostream>
-#include <vector>
-#include <string>
-#include <memory>
 #include <stack>
 #include <map>
 #include <stdexcept>
 
-using std::cout;
-using std::vector;
-using std::string;
-using std::unique_ptr;
-using std::make_unique;
-using std::move;
-using std::stack;
-using std::map;
-using std::invalid_argument;
-
-using c_it = vector<string>::const_iterator;
+using c_it = std::vector<std::string>::const_iterator;
 
 /*
 Helper func for construct_syntree
@@ -30,10 +12,10 @@ Returns ptr to root node of syntax tree
 Uses a modified "shunting yard algorithm" to produce syntax tree
 `st` and `ed` are passed by value for slight efficiency
 */
-unique_ptr<node> recurse_create_syntree(const c_it st, const c_it ed, const map<c_it, c_it>& match) {
+std::unique_ptr<node> recurse_create_syntree(const c_it st, const c_it ed, const std::map<c_it, c_it>& match) {
     
-    stack<string> ops;
-    stack<unique_ptr<node>> terms;
+    std::stack<std::string> ops;
+    std::stack<std::unique_ptr<node>> terms;
     
     for (c_it it = st; it != ed; ++it) {
         
@@ -45,19 +27,19 @@ unique_ptr<node> recurse_create_syntree(const c_it st, const c_it ed, const map<
         }
         else if (is_operator_token(*it)) {
             
-            //Create subtrees from the operators in `ops` stack
+            //Create subtrees from the operators in `ops` std::stack
             while (!ops.empty() && precedence_of(ops.top()) >= precedence_of(*it)) {
                 
                 if (terms.size() < 2) {
                     throw "recurse_create_syntree: too many ops, not enough terms";
                 }
                 
-                unique_ptr<node> r = move(terms.top());
+                std::unique_ptr<node> r = std::move(terms.top());
                 terms.pop();
-                unique_ptr<node> l = move(terms.top());
+                std::unique_ptr<node> l = std::move(terms.top());
                 terms.pop();
                 
-                terms.push(create_node(ops.top(), move(l), move(r)));
+                terms.push(create_node(ops.top(), std::move(l), std::move(r)));
                 ops.pop();
             }
             ops.push(*it);
@@ -82,51 +64,51 @@ unique_ptr<node> recurse_create_syntree(const c_it st, const c_it ed, const map<
             throw "recurse_create_syntree: too many ops, not enough terms";
         }
         
-        unique_ptr<node> r = move(terms.top());
+        std::unique_ptr<node> r = std::move(terms.top());
         terms.pop();
-        unique_ptr<node> l = move(terms.top());
+        std::unique_ptr<node> l = std::move(terms.top());
         terms.pop();
         
-        terms.push(create_node(ops.top(), move(l), move(r)));
+        terms.push(create_node(ops.top(), std::move(l), std::move(r)));
         ops.pop();
     }
     
     if (terms.size() != 1) {
-        throw invalid_argument("recurse_create_syntree: parsing error");
+        throw std::invalid_argument("recurse_create_syntree: parsing error");
     }
 
-    unique_ptr<node> res = move(terms.top());
+    std::unique_ptr<node> res = std::move(terms.top());
     terms.pop();
     return res;
 }
 
 /*
 Returns ptr to root node of syntax tree
-Creates map<c_it, c_it> to match ( to )
+Creates std::map<c_it, c_it> to match ( to )
 Then calls recurse_create_syntree
 `st` and `ed` are passed by value for slight efficiency
 */
-unique_ptr<node> construct_syntree(const c_it st, const c_it ed) {
+std::unique_ptr<node> construct_syntree(const c_it st, const c_it ed) {
     
-    //first create map that matches "(" iterators to ")" iterators
-    map<c_it, c_it> match;
+    //first create std::map that matches "(" iterators to ")" iterators
+    std::map<c_it, c_it> match;
     
-    //stack to store "("
-    stack<c_it> keys;
+    //std::stack to store "("
+    std::stack<c_it> keys;
     for (c_it it = st; it != ed; ++it) {
         if (*it == "(") {
             keys.push(it);
         }
         else if (*it == ")") {
             if (keys.empty()) {
-                throw invalid_argument("construct_syntree: missing opening parenthesis");
+                throw std::invalid_argument("construct_syntree: missing opening parenthesis");
             }
             match[keys.top()] = it;
             keys.pop();
         }
     }
     if (!keys.empty()) {
-        throw invalid_argument("construct_syntree: too many opening parenthesis");
+        throw std::invalid_argument("construct_syntree: too many opening parenthesis");
     }
     
     return recurse_create_syntree(st, ed, match);

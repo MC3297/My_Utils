@@ -1,15 +1,13 @@
-#pragma once
+#include "nodes.h"
+#include "create.h"
 
-#include "nodes.cpp"
-#include "create.cpp"
-
-unique_ptr<node> number_node::deriv() {
+std::unique_ptr<node> number_node::deriv() {
     return create_node("0");
 }
-unique_ptr<node> variable_node::deriv() {
+std::unique_ptr<node> variable_node::deriv() {
     return create_node("1");
 }
-unique_ptr<node> op_node::deriv() {
+std::unique_ptr<node> op_node::deriv() {
     if (op == "+") {
         return create_node("+", left->deriv(), right->deriv());
     }
@@ -50,7 +48,7 @@ unique_ptr<node> op_node::deriv() {
     }
     return nullptr;
 }
-unique_ptr<node> func_node::deriv() {
+std::unique_ptr<node> func_node::deriv() {
     if (func == "sin") {
         return create_node("*", create_node("cos", arg->clone()), arg->deriv());
     }

@@ -1,58 +1,42 @@
-#pragma once
+#include "token.h"
 
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <cstddef>
 #include <cctype>
 #include <stdexcept>
 
-using std::string;
-using std::vector;
-using std::find;
-using std::size_t;
-using std::all_of;
-using std::isdigit;
-using std::invalid_argument;
 
-const vector<string> operator_tokens = {"+", "-", "*", "/", "^"};
-const vector<string> function_tokens = {"sin", "cos", "log"};
-const vector<string> digit_tokens = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-const vector<string> variable_tokens = {"x"};
-const vector<string> misc_tokens = {"(", ")"};
-
-static bool is_number(const string& tok) {
+static bool is_number(const std::string& tok) {
     if (tok.empty()) return false;
     for (char c: tok) {
-        if (!isdigit(c)) return false;
+        if (!std::isdigit(c)) return false;
     }
     return true;
 }
 
-
-bool is_operator_token(const string& tok) {
-    return find(operator_tokens.begin(), operator_tokens.end(), tok) != operator_tokens.end();
+bool is_operator_token(const std::string& tok) {
+    return std::find(operator_tokens.begin(), operator_tokens.end(), tok) != operator_tokens.end();
 }
 
-bool is_integer_token(const string& tok) {
+bool is_integer_token(const std::string& tok) {
     return is_number(tok);
 }
 
-bool is_variable_token(const string& tok) {
-    return find(variable_tokens.begin(), variable_tokens.end(), tok) != variable_tokens.end();
+bool is_variable_token(const std::string& tok) {
+    return std::find(variable_tokens.begin(), variable_tokens.end(), tok) != variable_tokens.end();
 }
 
-bool is_func_token(const string& tok) {
-    return find(function_tokens.begin(), function_tokens.end(), tok) != function_tokens.end();
+bool is_func_token(const std::string& tok) {
+    return std::find(function_tokens.begin(), function_tokens.end(), tok) != function_tokens.end();
 }
 
-bool is_misc_token(const string& tok) {
-    return find(misc_tokens.begin(), misc_tokens.end(), tok) != misc_tokens.end();
+bool is_misc_token(const std::string& tok) {
+    return std::find(misc_tokens.begin(), misc_tokens.end(), tok) != misc_tokens.end();
 }
 
 
 //doesnt include negative numbers as valid tokens
-bool is_valid_token(const string& tok) {
+bool is_valid_token(const std::string& tok) {
     return is_operator_token(tok) || 
     is_integer_token(tok) || 
     is_variable_token(tok) || 
@@ -64,7 +48,7 @@ bool is_valid_token(const string& tok) {
 Assigns each binary operator a numerical precedence
 Higher precendence means larger number
 */
-int precedence_of(const string &op) {
+int precedence_of(const std::string& op) {
     if (op == "^") return 3;
     if (op == "*") return 2;
     if (op == "/") return 2;
@@ -78,11 +62,11 @@ Returns a list of tokens from `expr`
 Finds longest valid token and pushes
 Prioritizes longer tokens, ie "cosh" before "cos"
 */
-vector<string> tokenize(const string& expr) {
-    vector<string> res;
+std::vector<std::string> tokenize(const std::string& expr) {
+    std::vector<std::string> res;
     
-    string cur;
-    size_t i = 0;
+    std::string cur;
+    std::size_t i = 0;
     while (i < expr.size()) {
         while (i < expr.size() && !is_valid_token(cur)) {
             cur += expr[i];
@@ -93,7 +77,7 @@ vector<string> tokenize(const string& expr) {
             i++;
         }
         if (cur.empty()) {
-            throw invalid_argument("tokenize: invalid expr");
+            throw std::invalid_argument("tokenize: invalid expr");
         }
         
         res.push_back(cur);
