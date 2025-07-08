@@ -41,7 +41,8 @@ Each node type inherits and implements a `deriv()` function.
 For example, `number_node::deriv()` returns a `"0"` node. `op_node::deriv()` implements the operator rules for differentiation such as product rule or power rule.  
 `func_node::deriv()` implements the chain rule and matches functions to their derivatives such as `"sin"` becoming `"cos"`. 
 
-Remark: Rather than specifying the derivative rule for exponentials, I found the formula for the derivative of $f(x)^{g(x)}$ so any expression with `"^"` can be evaluated. That said, the output looks cluttered for simple polynomials so the power rule is still included in the code.
+Remarks: Rather than specifying the derivative rule for exponentials, I found the formula for the derivative of $f(x)^{g(x)}$ so any expression with `"^"` can be evaluated. That said, the output looks cluttered for simple polynomials so the power rule is still included in the code.  
+Also, negating expressions seemed quite complicated since the solution I found involved defining `"-"` as a function so instead terms that are negated sometimes appear as `"0-<expr>"` such as derivative of `"cos"`
 
 ## Simplifying
 Throughout the process, nodes are created via `create_node()` which accounts for the different types of nodes. For `op_node` and `func_node`, simplifying rules are applied to make the result cleaner.  
