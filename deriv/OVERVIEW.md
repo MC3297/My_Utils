@@ -24,7 +24,6 @@ graph TD;
     +-->1;
     *-->+;
     *-->log;
-    log-->x‎;
 ```
 
 ## Differentiate
