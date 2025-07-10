@@ -32,7 +32,7 @@ std::unique_ptr<node> create_node(const std::string& tok) {
     return nullptr;
 }
 
-std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node> arg) {
+std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&& arg) {
     
     if (is_func_token(tok)) {
         return std::make_unique<func_node>(tok, std::move(arg));
@@ -40,7 +40,7 @@ std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node> 
     return nullptr;
 }
 
-std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node> l, std::unique_ptr<node> r) {
+std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&& l, std::unique_ptr<node>&& r) {
     
     //combining constants
     if (l->type == node_type::NUMBER && r->type == node_type::NUMBER) {

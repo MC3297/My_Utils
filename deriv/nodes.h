@@ -88,7 +88,7 @@ struct op_node : public node {
     std::unique_ptr<node> left;
     std::unique_ptr<node> right;
     
-    op_node(const std::string _op, std::unique_ptr<node> l, std::unique_ptr<node> r):
+    op_node(const std::string _op, std::unique_ptr<node>&& l, std::unique_ptr<node>&& r):
         node(node_type::BINARY_OP),
         op(_op),
         left(std::move(l)),
@@ -122,7 +122,7 @@ struct func_node : public node {
     std::string func;
     std::unique_ptr<node> arg;
     
-    func_node(const std::string _func, std::unique_ptr<node> c):
+    func_node(const std::string _func, std::unique_ptr<node>&& c):
         node(node_type::UNARY_OP),
         func(_func),
         arg(std::move(c)) {}
