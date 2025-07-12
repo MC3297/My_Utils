@@ -27,6 +27,7 @@ struct node {
     virtual std::unique_ptr<node> deriv() = 0;
     virtual std::unique_ptr<node> clone() = 0;
     virtual void print(const std::string& prev_op) = 0;
+    virtual bool equal(const std::unique_ptr<node>& t) = 0;
     virtual ~node() = default;
 };
 
@@ -52,6 +53,9 @@ struct number_node : public node {
         std::cout << value;
     }
     
+    bool equal(const std::unique_ptr<node>& t) override {
+        return t->type == node_type::NUMBER && static_cast<number_node*>(t.get())->value == value;
+    }
 };
 
 /*
@@ -75,7 +79,10 @@ struct variable_node : public node {
     void print(const std::string& prev_op) override {
         std::cout << name;
     }
-
+    
+    bool equal(const std::unique_ptr<node>& t) override {
+        return t->type == node_type::VARIABLE && static_cast<variable_node*>(t.get())->name == name;
+    }
 };
 
 /*
@@ -111,6 +118,12 @@ struct op_node : public node {
         if (!no_parenthesis) std::cout << ")";
     }
 
+    bool equal(const std::unique_ptr<node>& t) override {
+        return t->type == node_type::BINARY_OP && 
+            static_cast<op_node*>(t.get())->op == op &&
+            equal(left) &&
+            equal(right);
+    }
 };
 
 /*
@@ -139,4 +152,9 @@ struct func_node : public node {
         std::cout << ")";
     }
 
+    bool equal(const std::unique_ptr<node>& t) override {
+        return t->type == node_type::UNARY_OP && 
+            static_cast<func_node*>(t.get())->func == func &&
+            equal(arg);
+    }
 };
