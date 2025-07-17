@@ -82,12 +82,6 @@ std::unique_ptr<node> recurse_create_syntree(const c_it st, const c_it ed, const
     return res;
 }
 
-/*
-Returns ptr to root node of syntax tree
-Creates std::map<c_it, c_it> to match ( to )
-Then calls recurse_create_syntree
-`st` and `ed` are passed by value for slight efficiency
-*/
 std::unique_ptr<node> construct_syntree(const c_it st, const c_it ed) {
     
     //first create std::map that matches "(" iterators to ")" iterators

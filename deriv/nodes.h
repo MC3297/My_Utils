@@ -34,7 +34,7 @@ struct node {
 /*
 `node` subclass
 Stores a constant integer
-Integers for now, could become a double in the future
+Integers only
 */
 struct number_node : public node {
     int value;

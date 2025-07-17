@@ -11,16 +11,6 @@ int get_node_val(const std::unique_ptr<node>& v) {
     return static_cast<number_node*>(v.get())->value;
 }
 
-/*
-Returns a ptr to node with specifications via parameters
-`l` and `r` parameters have default arguments instead of overloading create_node()
-edit: might just overload
-Call `create_node(op, l, r)` for operation nodes
-Call `create_node(func, arg)` for function nodes
-Call `create_node(tok)` for any other valid type
-Returns `nullptr` if token doesn't fit any category
-*/
-
 std::unique_ptr<node> create_node(const std::string& tok) {
     
     if (is_integer_token(tok)) {
@@ -61,7 +51,7 @@ std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&
         }
     }
     
-    //some identities
+    //_+0 or 0+_
     if (tok == "+") {
         if (l->type == node_type::NUMBER && get_node_val(l) == 0) {
             return std::move(r);
@@ -71,6 +61,7 @@ std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&
         }
     }
     
+    //_-0
     if (tok == "-") {
         if (r->type == node_type::NUMBER && get_node_val(r) == 0) {
             return std::move(l);
@@ -78,11 +69,13 @@ std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&
     }
     
     if (tok == "*") {
+        //_*0 or 0*_
         if ((l->type == node_type::NUMBER && get_node_val(l) == 0) ||
         (r->type == node_type::NUMBER && get_node_val(r) == 0)) {
             return std::make_unique<number_node>(0);
         }
         
+        //_*1 or 1*_
         if (l->type == node_type::NUMBER && get_node_val(l) == 1) {
             return std::move(r);
         }
@@ -92,10 +85,12 @@ std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&
     }
     
     if (tok == "/") {
+        // _/0
         if (r->type == node_type::NUMBER && get_node_val(r) == 0) {
             throw std::invalid_argument("can't divide by 0");
         }
         
+        // 0/_
         if (l->type == node_type::NUMBER && get_node_val(l) == 0) {
             return std::make_unique<number_node>(0);
         }
@@ -111,15 +106,19 @@ std::unique_ptr<node> create_node(const std::string& tok, std::unique_ptr<node>&
             throw std::invalid_argument("create_node: 0^0 undefined");
         }
         
+        //0^_
         if (l->type == node_type::NUMBER && get_node_val(l) == 0) {
             return std::make_unique<number_node>(0);
         }
+        //1^_
         if (l->type == node_type::NUMBER && get_node_val(l) == 1) {
             return std::make_unique<number_node>(1);
         }
+        //_^0
         if (r->type == node_type::NUMBER && get_node_val(r) == 0) {
             return std::make_unique<number_node>(1);
         }
+        //_^1
         if (r->type == node_type::NUMBER && get_node_val(r) == 1) {
             return std::move(l);
         }
