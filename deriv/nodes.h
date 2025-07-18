@@ -26,7 +26,7 @@ struct node {
     
     virtual std::unique_ptr<node> deriv() = 0;
     virtual std::unique_ptr<node> clone() = 0;
-    virtual void print(const std::string& prev_op) = 0;
+    virtual void print(const std::string& prev_op, std::string& res) = 0;
     virtual bool equal(const std::unique_ptr<node>& t) = 0;
     virtual ~node() = default;
 };
@@ -49,8 +49,8 @@ struct number_node : public node {
         return std::make_unique<number_node>(value);
     }
     
-    void print(const std::string& prev_op) override {
-        std::cout << value;
+    void print(const std::string& prev_op, std::string& res) override {
+        res += std::to_string(value);
     }
     
     bool equal(const std::unique_ptr<node>& t) override {
@@ -76,8 +76,8 @@ struct variable_node : public node {
         return std::make_unique<variable_node>(name);
     }
     
-    void print(const std::string& prev_op) override {
-        std::cout << name;
+    void print(const std::string& prev_op, std::string& res) override {
+        res += name;
     }
     
     bool equal(const std::unique_ptr<node>& t) override {
@@ -107,15 +107,15 @@ struct op_node : public node {
         return std::make_unique<op_node>(op, left->clone(), right->clone());
     }
     
-    void print(const std::string& prev_op) override {
+    void print(const std::string& prev_op, std::string& res) override {
         bool no_parenthesis = is_func_token(prev_op) ||
         (is_operator_token(prev_op) && precedence_of(prev_op) <= precedence_of(op));
         
-        if (!no_parenthesis) std::cout << "(";
-        left->print(op);
-        std::cout << op;
-        right->print(op);
-        if (!no_parenthesis) std::cout << ")";
+        if (!no_parenthesis) res += "(";
+        left->print(op, res);
+        res += op;
+        right->print(op, res);
+        if (!no_parenthesis) res += ")";
     }
 
     bool equal(const std::unique_ptr<node>& t) override {
@@ -146,10 +146,10 @@ struct func_node : public node {
         return std::make_unique<func_node>(func, arg->clone());
     }
     
-    void print(const std::string& prev_op) override {
-        std::cout << func << "(";
-        arg->print(func);
-        std::cout << ")";
+    void print(const std::string& prev_op, std::string& res) override {
+        res += func+"(";
+        arg->print(func, res);
+        res += ")";
     }
 
     bool equal(const std::unique_ptr<node>& t) override {

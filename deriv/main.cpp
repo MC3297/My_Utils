@@ -5,21 +5,26 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
-#include <stdexcept>
+#include <cstring>
+#include <cstdio>
 
-
-int main(int argc, char *argv[]) {
-    if (argc == 1) {
-        throw std::invalid_argument("requires expression");
-    }
-    std::string expr = argv[1];
+const char* differentiate(const char* input) {
+    std::string expr(input);
     
     std::vector<std::string> tokens = tokenize(expr);
     
     std::unique_ptr<node> tree = construct_syntree(tokens.begin(), tokens.end());
     
     std::unique_ptr<node> d1 = tree->deriv();
-    d1->print("sin");//just so result doesnt have a parenthesis
-    std::cout << '\n';
+    
+    std::string derivative;
+    d1->print("sin", derivative);//just so result doesnt have a parenthesis
+    
+    char* output = new char[derivative.length() + 1];
+    std::strcpy(output, derivative.c_str());
+    return output;
+}
+
+int main(int argc, char *argv[]) {
+    std::printf("%s\n", differentiate(argv[1]));
 }
